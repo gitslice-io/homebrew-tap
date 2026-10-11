@@ -27,7 +27,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -am "gitslice $(sed -n 's/^  version "\(.*\)"$/\1/p' Formula/gitslice.rb)"
       - if: steps.diff.outputs.changed == 'true'
-        uses: Homebrew/actions/setup-homebrew@master
+        uses: Homebrew/actions/setup-homebrew@main
       - if: steps.diff.outputs.changed == 'true'
         name: Check it installs
         run: |
