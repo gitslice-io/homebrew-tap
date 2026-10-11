@@ -1,0 +1,37 @@
+name: update
+
+# Follows gs releases: rewrites the formula for the latest release, checks
+# that it installs, and commits it.
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency: update
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bin/update-formula
+      - id: diff
+        run: git diff --quiet || echo "changed=true" >> "$GITHUB_OUTPUT"
+      - if: steps.diff.outputs.changed == 'true'
+        name: Commit locally
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "gitslice $(sed -n 's/^  version "\(.*\)"$/\1/p' Formula/gitslice.rb)"
+      - if: steps.diff.outputs.changed == 'true'
+        uses: Homebrew/actions/setup-homebrew@master
+      - if: steps.diff.outputs.changed == 'true'
+        name: Check it installs
+        run: |
+          brew install gitslice-io/tap/gitslice
+          brew test gitslice-io/tap/gitslice
+      - if: steps.diff.outputs.changed == 'true'
+        run: git push

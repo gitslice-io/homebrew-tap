@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# Writes Formula/gitslice.rb for the latest gs release, or for the tag given
+# (bin/update-formula v0.4.4), from that release's checksums.txt.
+set -euo pipefail
+
+releases="${GS_RELEASES:-https://gitslice.io/releases}"
+tag="${1:-}"
+if [ -z "$tag" ]; then
+  # /releases/latest redirects to /releases/tag/<tag>.
+  tag="$(curl -fsSI "$releases/latest" | tr -d '\r' | awk 'tolower($1) == "location:" { print $2 }' | sed 's#.*/tag/##')"
+fi
+case "$tag" in
+  v[0-9]*.[0-9]*.[0-9]*) ;;
+  *) echo "update-formula: not a release tag: '$tag'" >&2; exit 1 ;;
+esac
+
+sums="$(curl -fsSL "$releases/download/$tag/checksums.txt")"
+sha() {
+  local value
+  value="$(printf '%s\n' "$sums" | awk -v f="$1" '$2 == f { print $1 }')"
+  [ -n "$value" ] || { echo "update-formula: no checksum for $1 in $tag" >&2; exit 1; }
+  printf '%s' "$value"
+}
+base="$releases/download/$tag"
+
+cd "$(dirname "$0")/.."
+cat > Formula/gitslice.rb <<RUBY
+# Written by bin/update-formula from the release's checksums.txt: change that
+# script, not this file.
+class Gitslice < Formula
+  desc "Native source graph CLI with Git-compatible slices and changesets"
+  homepage "https://gitslice.io"
+  version "${tag#v}"
+  license "Apache-2.0"
+
+  on_macos do
+    on_arm do
+      url "$base/gs_darwin_arm64.tar.gz"
+      sha256 "$(sha gs_darwin_arm64.tar.gz)"
+    end
+    on_intel do
+      url "$base/gs_darwin_amd64.tar.gz"
+      sha256 "$(sha gs_darwin_amd64.tar.gz)"
+    end
+  end
+
+  on_linux do
+    on_arm do
+      url "$base/gs_linux_arm64.tar.gz"
+      sha256 "$(sha gs_linux_arm64.tar.gz)"
+    end
+    on_intel do
+      url "$base/gs_linux_amd64.tar.gz"
+      sha256 "$(sha gs_linux_amd64.tar.gz)"
+    end
+  end
+
+  conflicts_with "ghostscript", because: "both install a \`gs\` binary"
+
+  def install
+    bin.install "gs"
+    generate_completions_from_executable(bin/"gs", "completion")
+  end
+
+  test do
+    ENV["GS_NO_UPDATE_CHECK"] = "1"
+    assert_match "gs version v#{version}", shell_output("#{bin}/gs version")
+  end
+end
+RUBY
+echo "Formula/gitslice.rb: gs $tag"

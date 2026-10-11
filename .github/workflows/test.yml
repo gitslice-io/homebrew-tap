@@ -1,0 +1,25 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  install:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, macos-13, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      # Sets up Homebrew and taps this repository at the checked-out commit.
+      - uses: Homebrew/actions/setup-homebrew@master
+      - run: brew install gitslice-io/tap/gitslice
+      - run: brew test gitslice-io/tap/gitslice
+      - name: gs runs and its completions are installed
+        run: |
+          GS_NO_UPDATE_CHECK=1 gs version
+          ls "$(brew --prefix)/share/zsh/site-functions/_gs" "$(brew --prefix)/etc/bash_completion.d/gs"
