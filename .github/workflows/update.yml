@@ -17,25 +17,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: bin/update-formula
-      - id: diff
-        run: git diff --quiet || echo "changed=true" >> "$GITHUB_OUTPUT"
-      - if: steps.diff.outputs.changed == 'true'
-        name: Commit locally
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -am "gitslice $(sed -n 's/^  version "\(.*\)"$/\1/p' Formula/gitslice.rb)"
-      - if: steps.diff.outputs.changed == 'true'
-        uses: Homebrew/actions/setup-homebrew@main
-      - if: steps.diff.outputs.changed == 'true'
-        name: Check it installs
-        run: |
-          brew install gitslice-io/tap/gitslice
-          brew test gitslice-io/tap/gitslice
-      # setup-homebrew re-taps the checkout and drops the credentials
-      # actions/checkout saved, so push with the job's token directly.
-      - if: steps.diff.outputs.changed == 'true'
+      # Taps this repository; the formula is then updated, tested and pushed
+      # from the tap itself, so the install check covers the new formula.
+      - uses: Homebrew/actions/setup-homebrew@main
+      - name: Update, check and push
         env:
           GH_TOKEN: ${{ github.token }}
-        run: git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
+        run: |
+          set -euo pipefail
+          cd "$(brew --repository gitslice-io/tap)"
+          bin/update-formula
+          if git diff --quiet; then
+            echo "formula is current"
+            exit 0
+          fi
+          version="$(sed -n 's/^  version "\(.*\)"$/\1/p' Formula/gitslice.rb)"
+          brew install gitslice-io/tap/gitslice
+          brew test gitslice-io/tap/gitslice
+          GS_NO_UPDATE_CHECK=1 gs version | grep -q "gs version v${version}"
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -qam "gitslice ${version}"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
