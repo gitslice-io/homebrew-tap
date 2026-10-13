@@ -33,5 +33,9 @@ jobs:
         run: |
           brew install gitslice-io/tap/gitslice
           brew test gitslice-io/tap/gitslice
+      # setup-homebrew re-taps the checkout and drops the credentials
+      # actions/checkout saved, so push with the job's token directly.
       - if: steps.diff.outputs.changed == 'true'
-        run: git push origin HEAD:main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
