@@ -34,4 +34,4 @@ jobs:
           brew install gitslice-io/tap/gitslice
           brew test gitslice-io/tap/gitslice
       - if: steps.diff.outputs.changed == 'true'
-        run: git push
+        run: git push origin HEAD:main
