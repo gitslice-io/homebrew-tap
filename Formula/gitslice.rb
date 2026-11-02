@@ -3,28 +3,28 @@
 class Gitslice < Formula
   desc "Native source graph CLI with Git-compatible slices and changesets"
   homepage "https://gitslice.io"
-  version "0.4.20"
+  version "0.4.21"
   license "Apache-2.0"
 
   on_macos do
     on_arm do
-      url "https://gitslice.io/releases/download/v0.4.20/gs_darwin_arm64.tar.gz"
-      sha256 "90fdb8a1e1b1565f453ccec155eb32236d1785666e8e0c00d70e536292aae71f"
+      url "https://gitslice.io/releases/download/v0.4.21/gs_darwin_arm64.tar.gz"
+      sha256 "e8e7071cfb44feef9a3464c3889f3b6a331bbb188aa4feb1d1042c3c32697fc3"
     end
     on_intel do
-      url "https://gitslice.io/releases/download/v0.4.20/gs_darwin_amd64.tar.gz"
-      sha256 "462bd66df23674b4e601ff2beb787f643e8bbe58762a4b010949d812bab1acce"
+      url "https://gitslice.io/releases/download/v0.4.21/gs_darwin_amd64.tar.gz"
+      sha256 "52de7ec453a122b7c9d9f4b611fe2dd2ff1e700445a9c79729b38fa2911fb1fa"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://gitslice.io/releases/download/v0.4.20/gs_linux_arm64.tar.gz"
-      sha256 "98518e414e05d1861d7706bbda060ef8c8c69a49c979fa97a10bf21601e9cee3"
+      url "https://gitslice.io/releases/download/v0.4.21/gs_linux_arm64.tar.gz"
+      sha256 "aab86da58586192c3904a8d45b7ba113537675bd2c674536dbd3fa793c693d37"
     end
     on_intel do
-      url "https://gitslice.io/releases/download/v0.4.20/gs_linux_amd64.tar.gz"
-      sha256 "c07b100cfabffd6baf5dd5d24a53cd81075ea0fb77e7c3c9bc777fb77fe767be"
+      url "https://gitslice.io/releases/download/v0.4.21/gs_linux_amd64.tar.gz"
+      sha256 "384faf1ebbe10c768dcdfb89829527ff231511a0514f1c3fe75d9b51617ddcae"
     end
   end
 
